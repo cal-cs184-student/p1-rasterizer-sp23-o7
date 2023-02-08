@@ -2,6 +2,18 @@
 
 using namespace std;
 
+  float inside_line(float line_x0, float line_y0, float line_x1, float line_y1, float pt_x, float pt_y){
+    float d_x = line_x1 - line_x0;
+    float d_y = line_y1 - line_y0;
+    return (-(pt_x - line_x0)*d_y + (pt_y - line_y0)*d_x);
+  }
+
+  bool comp(int a, int b)
+  {
+    return (a < b);
+  }
+
+
 namespace CGL {
 
   RasterizerImp::RasterizerImp(PixelSampleMethod psm, LevelSampleMethod lsm,
@@ -75,19 +87,20 @@ namespace CGL {
     rasterize_line(x0, y0, x1, y1, color);
     rasterize_line(x1, y1, x2, y2, color);
     rasterize_line(x2, y2, x0, y0, color);
-    float y_lower_bound = min(y0, y1, y2);
-    float y_upper_bound = max(y0, y1, y2);
-    float x_lower_bound = min(x0, x1, x2);
-    float x_upper_bound = max(x0, x1, x2);
 
-
-    for (float i = y_lower_bound; i <= y_upper_bound; i++){
-      for (float j = x_lower_bound; j <= x_upper_bound; j++){
-        float in_one = inside_line(x0, y0, x1, y1, j, i);
-        float in_two = inside_line(x1, y1, x2, y2, j, i);
-        float in_three = inside_line(x2, y2, x0, y0, j, i);
-        if(in_one > 0.0 && in_two > 0.0 && in_three > 0.0){
-          rasterize_point(j, i, color);
+    float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
+    float y_upper_bound = floor(std::max({y0, y1, y2}, comp));
+    float x_lower_bound = floor(std::min({x0, x1, x2}, comp));
+    float x_upper_bound = floor(std::max({x0, x1, x2}, comp));
+   
+    for (float y = (y_lower_bound + 0.5); y < y_upper_bound; y = y + 1.0){
+      for (float x = (x_lower_bound +0.5); x < x_upper_bound; x = x + 1.0 ){
+        float in_one = inside_line(x0, y0, x1, y1, x, y);
+        float in_two = inside_line(x1, y1, x2, y2, x, y);
+        float in_three = inside_line(x2, y2, x0, y0, x, y);
+        
+        if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+          rasterize_point(x, y, color);
         }
       }
     }
@@ -97,11 +110,7 @@ namespace CGL {
 
   }
 
-  float RasterizerImp::inside_line(float line_x0, float line_y0, float line_x1, float line_y1, float pt_x, float pt_y){
-    float d_x = line_x1 - line_x0;
-    float d_y = line_y1 - line_y0;
-    return (-(pt_x - line_x0)*d_y + (pt_y - line_y0)*d_x);
-  }
+
 
 
   void RasterizerImp::rasterize_interpolated_color_triangle(float x0, float y0, Color c0,
