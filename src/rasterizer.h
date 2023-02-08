@@ -105,6 +105,8 @@ namespace CGL {
       float x2, float y2,
       Color color);
 
+    float inside_line(float line_x0, float line_y0, float line_x1, float line_y1, float pt_x, float pt_y);
+
     void rasterize_interpolated_color_triangle(float x0, float y0, Color c0,
       float x1, float y1, Color c1,
       float x2, float y2, Color c2);
