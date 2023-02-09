@@ -93,21 +93,47 @@ namespace CGL {
     float x_lower_bound = floor(std::min({x0, x1, x2}, comp));
     float x_upper_bound = floor(std::max({x0, x1, x2}, comp));
    
-    for (float y = (y_lower_bound + 0.5); y < y_upper_bound; y = y + 1.0){
-      for (float x = (x_lower_bound +0.5); x < x_upper_bound; x = x + 1.0 ){
-        float in_one = inside_line(x0, y0, x1, y1, x, y);
-        float in_two = inside_line(x1, y1, x2, y2, x, y);
-        float in_three = inside_line(x2, y2, x0, y0, x, y);
+    // for (float y = (y_lower_bound + 0.5); y < y_upper_bound; y = y + 1.0){
+    //   for (float x = (x_lower_bound +0.5); x < x_upper_bound; x = x + 1.0 ){
+    //     float in_one = inside_line(x0, y0, x1, y1, x, y);
+    //     float in_two = inside_line(x1, y1, x2, y2, x, y);
+    //     float in_three = inside_line(x2, y2, x0, y0, x, y);
         
-        if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
-          rasterize_point(x, y, color);
+    //     if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+    //       rasterize_point(x, y, color);
+    //     }
+    //   }
+    // }
+
+    // TODO: Task 2: Update to implement super-sampled rasterization
+    //std::cout<<sample_rate<<flush;
+    // set i to be for x axis,j for y axis 
+
+    set_sample_rate(sample_rate);
+    int al = sizeof(sample_buffer); ///sizeof(sample_buffer[0]); //length calculation
+    //cout << "The length of the array is: " <<al;
+    float sample_sqrt = 1;    
+    if(sample_rate != 1){
+      sample_sqrt = sqrt(sample_rate);
+    }
+
+    for(float j = 1; j <= sample_sqrt; j++ ){
+      for(float i = 1; i <= sample_sqrt; i++){
+        for (float y = (y_lower_bound + (j/(sample_sqrt +1))); y < y_upper_bound; y = y + 1.0){
+          for (float x = (x_lower_bound +  (i/(sample_sqrt +1))); x < x_upper_bound; x = x + 1.0 ){
+            float in_one = inside_line(x0, y0, x1, y1, x, y);
+            float in_two = inside_line(x1, y1, x2, y2, x, y);
+            float in_three = inside_line(x2, y2, x0, y0, x, y);
+            
+            if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+              rasterize_point(x, y, color);
+            }
+            
+          }
         }
       }
     }
-
-    // TODO: Task 2: Update to implement super-sampled rasterization
-
-
+    
   }
 
 
@@ -145,8 +171,11 @@ namespace CGL {
     this->sample_rate = rate;
 
 
-    this->sample_buffer.resize(width * height, Color::White);
+    // this->sample_buffer.resize(width * height, Color::White);
+    //this->sample_buffer.resize((sqrt(rate) * width) * (sqrt(rate) * height), Color::White);
+    this->sample_buffer.resize(rate * (width* height), Color::White);
   }
+
 
 
   void RasterizerImp::set_framebuffer_target(unsigned char* rgb_framebuffer,
@@ -154,7 +183,7 @@ namespace CGL {
   {
     // TODO: Task 2: You may want to update this function for supersampling support
 
-    this->width = width;
+    this->width = width; 
     this->height = height;
     this->rgb_framebuffer_target = rgb_framebuffer;
 
@@ -177,6 +206,7 @@ namespace CGL {
   void RasterizerImp::resolve_to_framebuffer() {
     // TODO: Task 2: You will likely want to update this function for supersampling support
 
+    //where we want to sum down?
 
     for (int x = 0; x < width; ++x) {
       for (int y = 0; y < height; ++y) {
