@@ -2,6 +2,8 @@
 
 using namespace std;
 
+
+
   float inside_line(float line_x0, float line_y0, float line_x1, float line_y1, float pt_x, float pt_y){
     float d_x = line_x1 - line_x0;
     float d_y = line_y1 - line_y0;
@@ -34,8 +36,12 @@ namespace CGL {
     // NOTE: You are not required to implement proper supersampling for points and lines
     // It is sufficient to use the same color for all supersamples of a pixel for points and lines (not triangles)
 
-
-    sample_buffer[y * width + x] = c;
+    float sample_sqrt = 1;    
+    if(sample_rate != 1){
+      sample_sqrt = sqrt(sample_rate);
+    }
+   
+    sample_buffer[y * (width * sample_sqrt) + x] = c; //num row * row size + col num
   }
 
   // Rasterize a point: simple example to help you start familiarizing
@@ -109,18 +115,18 @@ namespace CGL {
     //std::cout<<sample_rate<<flush;
     // set i to be for x axis,j for y axis 
 
-    set_sample_rate(sample_rate);
-    int al = sizeof(sample_buffer); ///sizeof(sample_buffer[0]); //length calculation
+    //set_sample_rate(sample_rate);
+    //int al = sizeof(sample_buffer); ///sizeof(sample_buffer[0]); //length calculation
     //cout << "The length of the array is: " <<al;
     float sample_sqrt = 1;    
     if(sample_rate != 1){
       sample_sqrt = sqrt(sample_rate);
     }
 
-    for(float j = 1; j <= sample_sqrt; j++ ){
-      for(float i = 1; i <= sample_sqrt; i++){
-        for (float y = (y_lower_bound + (j/(sample_sqrt +1))); y < y_upper_bound; y = y + 1.0){
-          for (float x = (x_lower_bound +  (i/(sample_sqrt +1))); x < x_upper_bound; x = x + 1.0 ){
+    for(float j = 0; j < sample_sqrt; j++ ){
+       for(float i = 0; i < sample_sqrt; i++){
+        for (float y = (y_lower_bound + j); y < (y_upper_bound*sample_sqrt); y = y + sample_sqrt){
+          for (float x = (x_lower_bound + i); x < (x_upper_bound*sample_sqrt); x = x + sample_sqrt){
             float in_one = inside_line(x0, y0, x1, y1, x, y);
             float in_two = inside_line(x1, y1, x2, y2, x, y);
             float in_three = inside_line(x2, y2, x0, y0, x, y);
@@ -128,11 +134,28 @@ namespace CGL {
             if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
               rasterize_point(x, y, color);
             }
-            
           }
         }
-      }
+       }
     }
+
+
+    // for(float j = 1; j <= sample_sqrt; j++ ){
+    //   for(float i = 1; i <= sample_sqrt; i++){
+    //     for (float y = (y_lower_bound + (j/(sample_sqrt +1))); y < y_upper_bound; y = y + 1.0){
+    //       for (float x = (x_lower_bound +  (i/(sample_sqrt +1))); x < x_upper_bound; x = x + 1.0 ){
+    //         float in_one = inside_line(x0, y0, x1, y1, x, y);
+    //         float in_two = inside_line(x1, y1, x2, y2, x, y);
+    //         float in_three = inside_line(x2, y2, x0, y0, x, y);
+            
+    //         if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+    //           rasterize_point(x, y, color);
+    //         }
+            
+    //       }
+    //     }
+    //   }
+    // }
     
   }
 
@@ -173,7 +196,7 @@ namespace CGL {
 
     // this->sample_buffer.resize(width * height, Color::White);
     //this->sample_buffer.resize((sqrt(rate) * width) * (sqrt(rate) * height), Color::White);
-    this->sample_buffer.resize(rate * (width* height), Color::White);
+    this->sample_buffer.resize(sample_rate * (width* height), Color::White);
   }
 
 
@@ -188,7 +211,7 @@ namespace CGL {
     this->rgb_framebuffer_target = rgb_framebuffer;
 
 
-    this->sample_buffer.resize(width * height, Color::White);
+    this->sample_buffer.resize(sample_rate* (width * height), Color::White);
   }
 
 
@@ -207,10 +230,32 @@ namespace CGL {
     // TODO: Task 2: You will likely want to update this function for supersampling support
 
     //where we want to sum down?
+    float sample_sqrt = 1;    
+    if(sample_rate != 1){
+      sample_sqrt = sqrt(sample_rate);
+    }
+    
 
-    for (int x = 0; x < width; ++x) {
-      for (int y = 0; y < height; ++y) {
-        Color col = sample_buffer[y * width + x];
+    for (int x = 0; x < width * sample_sqrt; x = x + sample_sqrt) {
+      for (int y = 0; y < height * sample_sqrt; y = y + sample_sqrt) {
+        Color col = (0,0,0);//sample_buffer[y * width*sample_sqrt + x];
+        for (int j = 0; j < sample_sqrt; j++){
+          for(int i = 0; i < sample_sqrt; i++){
+            col = col + sample_buffer[(y+j) * (width * sample_sqrt)+ (x+i)];
+
+            // std::bitset<sizeof f*8>(*(long unsigned int*)(&f))
+
+            // std::bitset<sizeof(float) * CHAR_BIT> bits(data.output);
+            // for(int i = 0; i < 3; i++){
+            //   (&temp.r)[i] = (&temp.r)[i];//sample_sqrt;// /sample_sqrt;
+            // }
+            //col = col + temp;
+          }
+        }
+        // for(int i = 0; i < 3; i++){
+        //   col[i] = col[i];// /sample_sqrt;
+        // }
+        //Color col = sample_buffer[y * width + x]; //row num * row size + col num
 
         for (int k = 0; k < 3; ++k) {
           this->rgb_framebuffer_target[3 * (y * width + x) + k] = (&col.r)[k] * 255;
