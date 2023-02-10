@@ -36,12 +36,12 @@ namespace CGL {
     // NOTE: You are not required to implement proper supersampling for points and lines
     // It is sufficient to use the same color for all supersamples of a pixel for points and lines (not triangles)
 
-    float sample_sqrt = 1;    
-    if(sample_rate != 1){
-      sample_sqrt = sqrt(sample_rate);
-    }
+    // float sample_sqrt = 1;    
+    // if(sample_rate != 1){
+    //   sample_sqrt = sqrt(sample_rate);
+    // }
    
-    sample_buffer[y * (width * sample_sqrt) + x] = c; //num row * row size + col num
+    sample_buffer[y * (width) + x] = c; //num row * row size + col num
   }
 
   // Rasterize a point: simple example to help you start familiarizing
@@ -123,21 +123,40 @@ namespace CGL {
       sample_sqrt = sqrt(sample_rate);
     }
 
-    for(float j = 0; j < sample_sqrt; j++ ){
-       for(float i = 0; i < sample_sqrt; i++){
-        for (float y = (y_lower_bound + j); y < (y_upper_bound*sample_sqrt); y = y + sample_sqrt){
-          for (float x = (x_lower_bound + i); x < (x_upper_bound*sample_sqrt); x = x + sample_sqrt){
-            float in_one = inside_line(x0, y0, x1, y1, x, y);
-            float in_two = inside_line(x1, y1, x2, y2, x, y);
-            float in_three = inside_line(x2, y2, x0, y0, x, y);
-            
+    for (float y = (y_lower_bound ); y < (y_upper_bound); y = y + 1){
+      for (float x = (x_lower_bound ); x < (x_upper_bound); x = x + 1){
+         for(float j = 1; j <= sample_sqrt; j++ ){
+            for(float i = 1; i <= sample_sqrt; i++){
+              float new_x = x + (i/(sample_sqrt +1));
+              float new_y = y + (j/(sample_sqrt +1));
+              float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
+              float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
+              float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
             if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
-              rasterize_point(x, y, color);
+              rasterize_point(y*(sample_sqrt)+j-1, x*(sample_sqrt)+i-1, color);
             }
           }
         }
        }
     }
+    // for (float y = (y_lower_bound ); y < (y_upper_bound); y = y + 1){
+    //   for (float x = (x_lower_bound ); x < (x_upper_bound); x = x + 1){
+    //      for(float j = 0; j < sample_sqrt; j++ ){
+    //         for(float i = 0; i < sample_sqrt; i++){
+    //           float new_x = x + (i/(sample_sqrt +1));
+    //           float new_y = y + (j/(sample_sqrt +1));
+    //           float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
+    //           float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
+    //           float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
+            
+    //         if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+    //           rasterize_point(new_x, new_y, color);
+    //           //sample_buff[(y+j) * (width * sample_sqrt)+ (x+i)] = color;
+    //         }
+    //       }
+    //     }
+    //    }
+    // }
 
 
     // for(float j = 1; j <= sample_sqrt; j++ ){
@@ -234,28 +253,18 @@ namespace CGL {
     if(sample_rate != 1){
       sample_sqrt = sqrt(sample_rate);
     }
-    
 
     for (int x = 0; x < width * sample_sqrt; x = x + sample_sqrt) {
       for (int y = 0; y < height * sample_sqrt; y = y + sample_sqrt) {
         Color col = (0,0,0);//sample_buffer[y * width*sample_sqrt + x];
-        for (int j = 0; j < sample_sqrt; j++){
-          for(int i = 0; i < sample_sqrt; i++){
-            col = col + sample_buffer[(y+j) * (width * sample_sqrt)+ (x+i)];
-
-            // std::bitset<sizeof f*8>(*(long unsigned int*)(&f))
-
-            // std::bitset<sizeof(float) * CHAR_BIT> bits(data.output);
-            // for(int i = 0; i < 3; i++){
-            //   (&temp.r)[i] = (&temp.r)[i];//sample_sqrt;// /sample_sqrt;
-            // }
-            //col = col + temp;
+        for (int j = 0; j <= sample_sqrt; j++){
+          for(int i = 0; i <= sample_sqrt; i++){
+            col = col + sample_buffer[((y)+j) * (width*sample_rate)+ (x)+i];
           }
         }
-        // for(int i = 0; i < 3; i++){
-        //   col[i] = col[i];// /sample_sqrt;
-        // }
-        //Color col = sample_buffer[y * width + x]; //row num * row size + col num
+        col[0] = col[0]/sample_rate;
+        col[1] = col[1]/sample_rate;
+        col[2] = col[2]/sample_rate;
 
         for (int k = 0; k < 3; ++k) {
           this->rgb_framebuffer_target[3 * (y * width + x) + k] = (&col.r)[k] * 255;
