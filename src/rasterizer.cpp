@@ -189,7 +189,6 @@ namespace CGL {
 
   void RasterizerImp::clear_buffers() {
     std::fill(rgb_framebuffer_target, rgb_framebuffer_target + 3 * width * height, 255);
-    std::fill(sample_buffer.begin(), sample_buffer.end(), Color::White);
   }
 
 
@@ -222,14 +221,6 @@ namespace CGL {
     //   }
     // }
 
-    int index = 0;
-    for (int y = 0; y < height ; y = y + 1) {
-      for (int x = 0; x < width ; x = x + 1) {
-        Color col = (0,0,0);//sample_buffer[y * width*sample_sqrt + x];
-        for(int j =0; j<sample_rate; j++){
-          col = col + sample_buffer[index + j];
-          index++;
-        }
         
 
     for (int x = 0; x < width; x++) {
@@ -249,6 +240,5 @@ namespace CGL {
   }
 
   Rasterizer::~Rasterizer() { }
-
-
-}// CGL
+  
+}
