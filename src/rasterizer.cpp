@@ -15,6 +15,9 @@ using namespace std;
     return (a < b);
   }
 
+float line_dist(float x, float y, float xp, float yp, float xq, float yq){
+  return -(x-xp)*(yq-yp)+(y-yp)*(xq-xp);
+}
 
 namespace CGL {
 
@@ -142,8 +145,33 @@ namespace CGL {
   {
     // TODO: Task 4: Rasterize the triangle, calculating barycentric coordinates and using them to interpolate vertex colors across the triangle
     // Hint: You can reuse code from rasterize_triangle
+    // V = aV1 + bV2 + cV3
 
+    
+    float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
+    float y_upper_bound = floor(std::max({y0, y1, y2}, comp));
+    float x_lower_bound = floor(std::min({x0, x1, x2}, comp));
+    float x_upper_bound = floor(std::max({x0, x1, x2}, comp));
 
+    for (float x = (x_lower_bound); x <= x_upper_bound; x = x + 1.0){
+      for (float y = (y_lower_bound); y <= y_upper_bound; y = y + 1.0 ){
+        float new_x = x +0.5;
+        float new_y = y +0.5;
+        
+        float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
+        float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
+        float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
+            
+        if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+          float alpha = line_dist(new_x, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
+          float beta = line_dist(new_x, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
+          float gamma = line_dist(new_x, new_y, x1,y1,x0,y0)/line_dist(x2, y2, x1,y1,x0,y0);
+          Color pt_color = alpha*c0 + beta*c1 + gamma*c2;
+          sample_buffer[(y * width + x)] = pt_color;
+        }
+        
+      }
+    }
 
   }
 
@@ -220,17 +248,7 @@ namespace CGL {
     //   for (int k = 0; k < 3; ++k) {
     //     this->rgb_framebuffer_target[3 * (y * width + x) + k] = (&col.r)[k] * 255;
     //   }
-    // }
-
-    int index = 0;
-    for (int y = 0; y < height ; y = y + 1) {
-      for (int x = 0; x < width ; x = x + 1) {
-        Color col = (0,0,0);//sample_buffer[y * width*sample_sqrt + x];
-        for(int j =0; j<sample_rate; j++){
-          col = col + sample_buffer[index + j];
-          index++;
-        }
-        
+    // }        
 
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
