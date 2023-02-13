@@ -29,6 +29,9 @@ namespace CGL {
   Color Texture::sample_nearest(Vector2D uv, int level) {
     // TODO: Task 5: Fill this in.
     auto& mip = mipmap[level];
+    //std::cout<< mip;
+
+
 
 
 

@@ -39,12 +39,11 @@ namespace CGL {
     // NOTE: You are not required to implement proper supersampling for points and lines
     // It is sufficient to use the same color for all supersamples of a pixel for points and lines (not triangles)
 
-    // float sample_sqrt = 1;    
-    // if(sample_rate != 1){
-    //   sample_sqrt = sqrt(sample_rate);
-    // }
+    for(int z = 0; z < sample_rate; z++){
+      sample_buffer[z*(width*height)+(y * width + x)] = c; //num row * row size + col num
+    }
    
-    sample_buffer[y * (width) + x] = c; //num row * row size + col num
+    
   }
 
   // Rasterize a point: simple example to help you start familiarizing
@@ -143,10 +142,14 @@ namespace CGL {
     float x1, float y1, Color c1,
     float x2, float y2, Color c2)
   {
-    // TODO: Task 4: Rasterize the triangle, calculating barycentric coordinates and using them to interpolate vertex colors across the triangle
-    // Hint: You can reuse code from rasterize_triangle
-    // V = aV1 + bV2 + cV3
+  //   // TODO: Task 4: Rasterize the triangle, calculating barycentric coordinates and using them to interpolate vertex colors across the triangle
+  //   // Hint: You can reuse code from rasterize_triangle
+  //   // V = aV1 + bV2 + cV3
 
+    float sample_sqrt = 1;    
+    if(sample_rate != 1){
+      sample_sqrt = sqrt(sample_rate);
+    }
     
     float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
     float y_upper_bound = floor(std::max({y0, y1, y2}, comp));
@@ -155,19 +158,25 @@ namespace CGL {
 
     for (float x = (x_lower_bound); x <= x_upper_bound; x = x + 1.0){
       for (float y = (y_lower_bound); y <= y_upper_bound; y = y + 1.0 ){
-        float new_x = x +0.5;
-        float new_y = y +0.5;
+        int z = 0;
+        for(int j = 0; j < sample_sqrt; j++){
+          for(int i = 0; i < sample_sqrt; i++){
+            float new_x = x + (i+0.5)/sample_sqrt;
+            float new_y = y + (j+0.5)/sample_sqrt;
         
-        float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
-        float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
-        float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
-            
-        if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
-          float alpha = line_dist(new_x, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
-          float beta = line_dist(new_x, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
-          float gamma = line_dist(new_x, new_y, x1,y1,x0,y0)/line_dist(x2, y2, x1,y1,x0,y0);
-          Color pt_color = alpha*c0 + beta*c1 + gamma*c2;
-          sample_buffer[(y * width + x)] = pt_color;
+            float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
+            float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
+            float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
+                
+            if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+              float alpha = line_dist(new_x, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
+              float beta = line_dist(new_x, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
+              float gamma = line_dist(new_x, new_y, x1,y1,x0,y0)/line_dist(x2, y2, x1,y1,x0,y0);
+              Color pt_color = alpha*c0 + beta*c1 + gamma*c2;
+              sample_buffer[z*(width*height)+(y * width + x)] = pt_color;
+            }
+            z++;
+          }
         }
         
       }
@@ -211,12 +220,13 @@ namespace CGL {
     this->rgb_framebuffer_target = rgb_framebuffer;
 
 
-    this->sample_buffer.resize(sample_rate* (width * height), Color::White);
+    this->sample_buffer.resize((width * height), Color::White);
   }
 
 
   void RasterizerImp::clear_buffers() {
     std::fill(rgb_framebuffer_target, rgb_framebuffer_target + 3 * width * height, 255);
+    std::fill(sample_buffer.begin(), sample_buffer.end(), Color::White);
   }
 
 
@@ -232,28 +242,7 @@ namespace CGL {
     float sample_sqrt = 1;    
     if(sample_rate != 1){
       sample_sqrt = sqrt(sample_rate);
-    }
-    //int index = 0;
-
-    // for(int index = 0; index < width * height * sample_rate; index = index + sample_rate){
-    //   Color col = (0,0,0);
-    //   for(int j =0; j<sample_rate; j++){
-    //     col = col + sample_buffer[index + j];
-    //   }
-    //   col[0] = col[0]/sample_rate;
-    //   col[1] = col[1]/sample_rate;
-    //   col[2] = col[2]/sample_rate;
-
-    //   for (int k = 0; k < 3; ++k) {
-    //     this->rgb_framebuffer_target[3 * (y * width + x) + k] = (&col.r)[k] * 255;
-    //   }
-<<<<<<< HEAD
-    // }        
-=======
-    // }
-
-        
->>>>>>> dff557e405578accff2607f39fd8e3682314d52e
+    } 
 
     for (int x = 0; x < width; x++) {
       for (int y = 0; y < height; y++) {
@@ -263,7 +252,7 @@ namespace CGL {
         }
 
         for (int k = 0; k < 3; ++k) {
-          this->rgb_framebuffer_target[3 * (y * width + x) + k] = ((&col.r)[k]) * 255;
+          this->rgb_framebuffer_target[3 * (y * width + x) + k] = ((&col.r)[k] * float(1)/float(sample_rate)) * 255;
         }
 
       }
@@ -272,11 +261,6 @@ namespace CGL {
   }
 
   Rasterizer::~Rasterizer() { }
-<<<<<<< HEAD
 
 
 }// CGL
-=======
-  
-}
->>>>>>> dff557e405578accff2607f39fd8e3682314d52e
