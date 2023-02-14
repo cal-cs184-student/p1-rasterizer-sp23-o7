@@ -194,6 +194,50 @@ namespace CGL {
     // TODO: Task 6: Set the correct barycentric differentials in the SampleParams struct.
     // Hint: You can reuse code from rasterize_triangle/rasterize_interpolated_color_triangle
 
+    SampleParams
+    tex.sample()
+
+
+    float sample_sqrt = 1;    
+    if(sample_rate != 1){
+      sample_sqrt = sqrt(sample_rate);
+    }
+    
+    float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
+    float y_upper_bound = floor(std::max({y0, y1, y2}, comp));
+    float x_lower_bound = floor(std::min({x0, x1, x2}, comp));
+    float x_upper_bound = floor(std::max({x0, x1, x2}, comp));
+
+    for (float x = (x_lower_bound); x <= x_upper_bound; x = x + 1.0){
+      for (float y = (y_lower_bound); y <= y_upper_bound; y = y + 1.0 ){
+        int z = 0;
+        for(int j = 0; j < sample_sqrt; j++){
+          for(int i = 0; i < sample_sqrt; i++){
+            float new_x = x + (i+0.5)/sample_sqrt;
+            float new_y = y + (j+0.5)/sample_sqrt;
+        
+            float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
+            float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
+            float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
+                
+            if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
+              float alpha = line_dist(new_x, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
+              float beta = line_dist(new_x, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
+              float gamma = line_dist(new_x, new_y, x1,y1,x0,y0)/line_dist(x2, y2, x1,y1,x0,y0);
+              uv->x = new_x;
+              uv->y = new_y;
+              c = tex.sample(samp_para)
+
+              get_texel
+              Color pt_color = alpha*c0 + beta*c1 + gamma*c2;
+              sample_buffer[z*(width*height)+(y * width + x)] = pt_color;
+            }
+            z++;
+          }
+        }
+        
+      }
+    }
 
 
 

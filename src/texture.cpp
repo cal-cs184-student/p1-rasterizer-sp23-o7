@@ -10,7 +10,7 @@ namespace CGL {
     // TODO: Task 6: Fill this in.
 
 
-// return magenta for invalid level
+    // return magenta for invalid level
     return Color(1, 0, 1);
   }
 
@@ -30,14 +30,10 @@ namespace CGL {
     // TODO: Task 5: Fill this in.
     auto& mip = mipmap[level];
     //std::cout<< mip;
-
-
-
-
-
-
+    tx = (mip->width-1) * uv->x;
+    ty = (mip->height-1)  * uv->y;
     // return magenta for invalid level
-    return Color(1, 0, 1);
+    return mip.get_texel(round(tx), round(ty));
   }
 
   Color Texture::sample_bilinear(Vector2D uv, int level) {
