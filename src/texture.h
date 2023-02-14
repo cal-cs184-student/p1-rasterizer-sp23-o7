@@ -15,10 +15,10 @@ typedef enum PixelSampleMethod { P_NEAREST = 0, P_LINEAR = 1 } PixelSampleMethod
 typedef enum LevelSampleMethod { L_ZERO = 0, L_NEAREST = 1, L_LINEAR = 2 } LevelSampleMethod;
 
 struct SampleParams {
-  Vector2D p_uv;
-  Vector2D p_dx_uv, p_dy_uv;
-  PixelSampleMethod psm;
-  LevelSampleMethod lsm;
+  Vector2D p_uv; // a b c mul thing 
+  Vector2D p_dx_uv, p_dy_uv; //
+  PixelSampleMethod psm; // nearest or bilin
+  LevelSampleMethod lsm; //lsm = 0
 };
 
 static const int kMaxMipLevels = 14;
@@ -57,6 +57,8 @@ struct Texture {
   Color sample_nearest(Vector2D uv, int level = 0);
 
   Color sample_bilinear(Vector2D uv, int level = 0);
+
+  Color lerp(float x, Color v0, Color v1);
 };
 
 }

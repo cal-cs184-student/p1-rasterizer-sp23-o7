@@ -194,10 +194,6 @@ namespace CGL {
     // TODO: Task 6: Set the correct barycentric differentials in the SampleParams struct.
     // Hint: You can reuse code from rasterize_triangle/rasterize_interpolated_color_triangle
 
-    SampleParams
-    tex.sample()
-
-
     float sample_sqrt = 1;    
     if(sample_rate != 1){
       sample_sqrt = sqrt(sample_rate);
@@ -216,21 +212,37 @@ namespace CGL {
             float new_x = x + (i+0.5)/sample_sqrt;
             float new_y = y + (j+0.5)/sample_sqrt;
         
-            float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
-            float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
-            float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
-                
-            if((in_one >= 0.0) && (in_two >= 0.0) && (in_three >= 0.0)){
-              float alpha = line_dist(new_x, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
-              float beta = line_dist(new_x, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
-              float gamma = line_dist(new_x, new_y, x1,y1,x0,y0)/line_dist(x2, y2, x1,y1,x0,y0);
-              uv->x = new_x;
-              uv->y = new_y;
-              c = tex.sample(samp_para)
+            // float in_one = inside_line(x0, y0, x1, y1, new_x, new_y);
+            // float in_two = inside_line(x1, y1, x2, y2, new_x, new_y);
+            // float in_three = inside_line(x2, y2, x0, y0, new_x, new_y);
 
-              get_texel
-              Color pt_color = alpha*c0 + beta*c1 + gamma*c2;
-              sample_buffer[z*(width*height)+(y * width + x)] = pt_color;
+            float alpha = line_dist(new_x, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
+            float beta = line_dist(new_x, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
+            float gamma = 1. - alpha - beta;
+                
+            if((alpha>=0) && (alpha<=1) && (beta>=0) && (beta<=1) && (gamma>=0) && (gamma<=1) && (alpha+beta+gamma==1)){
+              SampleParams samp_para = SampleParams();
+              samp_para.p_uv.x = alpha * (u0) + beta *(u1) + gamma *(u2);
+              samp_para.p_uv.y = alpha * (v0) + beta *(v1) + gamma *(v2);
+
+              float alpha_dx = line_dist(new_x + 1, new_y, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
+              float beta_dx = line_dist(new_x + 1, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
+              float gamma_dx = 1. - alpha_dx - beta_dx;
+
+              samp_para.p_dx_uv.x = samp_para.p_uv.x - (alpha_dx * (u0) + beta_dx *(u1) + gamma_dx *(u2));
+              samp_para.p_dx_uv.y = samp_para.p_uv.y - (alpha_dx * (v0) + beta_dx *(v1) + gamma_dx *(v2));
+
+              float alpha_dy = line_dist(new_x, new_y + 1, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
+              float beta_dy = line_dist(new_x, new_y + 1, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
+              float gamma_dy = 1. - alpha_dy - beta_dy;
+
+              samp_para.p_dy_uv.x = samp_para.p_uv.x - (alpha_dy * (u0) + beta_dy *(u1) + gamma_dy *(u2));
+              samp_para.p_dy_uv.y = samp_para.p_uv.y - (alpha_dy * (v0) + beta_dy *(v1) + gamma_dy *(v2));
+              
+              
+              Color c = tex.sample(samp_para);
+              //Color pt_color = alpha*c0 + beta*c1 + gamma*c2;
+              sample_buffer[z*(width*height)+(y * width + x)] = c;
             }
             z++;
           }
