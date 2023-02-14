@@ -92,9 +92,9 @@ namespace CGL {
     Color color) {
     // TODO: Task 1: Implement basic triangle rasterization here, no supersampling
     // rasterize the lines 
-    rasterize_line(x0, y0, x1, y1, color);
-    rasterize_line(x1, y1, x2, y2, color);
-    rasterize_line(x2, y2, x0, y0, color);
+    // rasterize_line(x0, y0, x1, y1, color);
+    // rasterize_line(x1, y1, x2, y2, color);
+    // rasterize_line(x2, y2, x0, y0, color);
 
     float sample_sqrt = 1;    
     if(sample_rate != 1){

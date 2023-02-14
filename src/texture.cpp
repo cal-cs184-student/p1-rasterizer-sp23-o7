@@ -60,8 +60,9 @@ namespace CGL {
     // TODO: Task 6: Fill this in.
     float first_sqrt = sqrt(pow(sp.p_dx_uv.x,2) + pow(sp.p_dx_uv.y,2));
     float second_sqrt = sqrt(pow(sp.p_dy_uv.x,2) + pow(sp.p_dy_uv.y,2));
+    float max = std::max({first_sqrt, second_sqrt}, newcomp);
 
-    return std::max({first_sqrt, second_sqrt}, newcomp);
+    return max;
   }
 
   Color MipLevel::get_texel(int tx, int ty) {
@@ -112,7 +113,7 @@ namespace CGL {
     //Color u0_y = lerp(s ,bottom_left_y, bottom_right_y);
 
 
-    Color u1_x = lerp(s ,top_left_x, top_right);
+    Color u1_x = lerp(s ,top_left, top_right);
     //Color u1_y = lerp(s ,top_left_y, top_right_y);
 
     Color f_x = lerp(t ,u1_x, u0_x);

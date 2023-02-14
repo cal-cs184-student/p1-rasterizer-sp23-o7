@@ -25,7 +25,7 @@
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
 <h1 align="middle">Project 1: Rasterizer</h1>
-<h2 align="middle">YOUR NAME, CS184-??</h2>
+<h2 align="middle">Edith Llontrop, Stefanie Gschwind, CS184-??</h2>
 
 <br><br>
 
@@ -37,6 +37,10 @@
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
+
+<p>Triangles are rasterized by How we rasterized triangles </p>
+
+
 
 <p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 
@@ -70,6 +74,48 @@
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
 
 
+<p>Our supersampling algorithm functions with modifications of our original triangle rasterization algorithm, the resolve_to_framebuffer() function, the set_sample_rate() function, and the fill_pixel() function.
+   In rasterize triangle we introduce a new variable z that keeps track of which number supersample we are currently taking inside one pixel. We also add two nested for loops that loop for varables i,j in the range of 0 to the square root 
+  of our sample size. This helps us find the exact float (position inside the pixel) that we need to be sampling from. The x, y positions of the supersample locations are computed by the equation: 
+  supersample x/y location = integar x/y pixel location + (i/j + 0.5)/(square root of sample rate). Where i,j are the same variables mentioned earlier and correspond to x,y respectivley. We check if each supersample exists inside the triangle using the
+three line test. If the spersample does lie within the triangle then we assign sample_buffer[z*(width*height)+(y*width+x)]=color. In order for this indexing to work, we increased the size of the sample buffer from width*height to sample_rate*width*height 
+the set_sample_rate() function. Eventhough the samplebuffer is just a (sample_rate * width * height) long one dimensional array, we imagined it as sample_rate many (width*height) long arrays. Thus the different supersamples were stored at the index locations
+z*(width*height)+(y*width+x), where z*(width*height) offsets all z consecutive supersamples from the previous supersample by width*height. This implementation however, caused the black boarder lines of the images to become blurred and transparent, thus we had 
+to make changes to fill_pixel(). Since our implementation of rasterize_triangle() doesn't call fill_pixel(), we know that fill_pixel() is only called by rasterize_point() and rasterize_line() and in both of those cases we know that what we are rasterizing is necessarily 
+occupying the entire pixel area with the given color. Thus we add a for loop in fill_pixel() that assigns the desired color for all z locations in the resized sample_buffer that correspond to that pixel's supersamples. This had to be done since our supersample implementation
+modified resolve_to_framebuffer() to average the colors of all z supersamples before assigning it to the framebuffer.</p>
+
+<p>Supersampling is useful because not all shapes and lines occupy all pixels completely. When we make the assumption that a pixel is either 100% in the shape or 0% in the shape, we end up with really pronounced jaggies. By supersampling we get a rough esitmation of
+  what percent of a certain pixel is inside a given geometric object. Then we can use that percentage to compute a modified color value for that pixel. The more supersamples in a pixel that test as inside an object, the closer that pixel color is to being the same color as a pixel
+  which is entirely in the given shape. Supersampling acts almost as a sort of gradient effect for the edges of objects as the colors of the edge pixels will more gradually tarnsition from object color to background color. This reduces the visibility/presence of jaggies. Another way to think of supersampling
+  is as an increase in the sample rate. When we supersample, we're sampling an extra z amount of times per pixel in different locations. That is, we're considering more samples and thus atialiasing our triangles.
+</p>
+
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/screenshot_2-13_22-25-49.png" align="middle" width="400px"/>
+        <figcaption align="middle"> basic/test4.svg with sample rate = 1</figcaption>
+      </td>
+      <td>
+        <img src="images/screenshot_2-13_22-25-51.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test4.svg with sample rate = 4</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/screenshot_2-13_22-25-55.png" align="middle" width="400px"/>
+        <figcaption align="middle">basic/test4.svg with sample rate = 16</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>These results are observed since as we increase our sampling rate, we're sampling in more locations within one pixel. When we have more spread out samples throughout the pixel we are able to catch cases of only a subpart of a pixel being within the triangle
+  more freqently. </p>
 
 <h3 align="middle">Part 3: Transforms</h3>
 
@@ -77,7 +123,27 @@
 
 <h2 align="middle">Section II: Sampling</h2>
 
+
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
+
+<p> 
+  A Barycentric coordinate is a way to define a point (x,y) with respect to the three sides of a triangle. Lets define the three vertex points of a triangle as A, B, and C. Alpha is defined as the distance between point (x,y) and the line created by the two vertices B, C divided
+  by the distance betwee vertex A and the line created by vertices B, C. Beta is defined as the distance between point (x,y) and the line created by the two vertices C,A divided
+  by the distance betwee vertex B and the line created by vertices C, A. Gamma is defined as the distance between point (x,y) and the line created by the two vertices A, B divided
+  by the distance betwee vertex C and the line created by vertices A, B. Another way to think about alpha, beta, and gamma is as the proportional distances of (x,y) to each of the three vertices. If 0 &le; alpha, beta, gamma &le; 1 and
+  alpha + beta + gamma = 1, then we know that (x,y) is inside the triangle defined by the vertices A,B,C.
+</p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/screenshot_2-13_23-34-20.png" align="middle" width="400px"/>
+        <figcaption align="middle"> basic/test7.svg with sample rate = 1</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
 
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
