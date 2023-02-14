@@ -38,9 +38,20 @@
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
 
-<p>Triangles are rasterized by How we rasterized triangles </p>
+<p>"Triangles are rasterized by How we rasterized triangles"</p>
 
+<p>In order to rasterize triangles we take the three points given to us create the smallest enclosing square to the triangle by indicating what the smallest and largest
+  x value is; we do the same for the y axis. We make sure that after finding these values to floor them so that we can deal with integers rather than decimals.
+  Once this is done we go through each pixel in our smallest enclosing box and initialize a new variable z that takes into consideration 
+  how many samples we have for this  pixel. Here however, z=1 as we are not supersampling, thus we make sure to find out new_x and new_y point that are 0.5 away from the original
+  pixel coordinate, denoting the center. After getting this new point we pass it into a function we created outselves called inside_line() that returns a value if the pixel is in
+  the three lines that make up the triangle. The inside_line() function uses the equation we have seen in class. In order to do this we make sure that the values returned from inside_line() are all greater 
+  than or equal to 0. In which we would proceed to update the sample_buffer to include the correct color for this pixel. 
 
+  Our algorithm is no worse than one that checks each sample within the bounding box of the triangle because we still check each pixel 
+  inside of the minimium enclosing square that we created.
+
+</p>
 
 <p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 
