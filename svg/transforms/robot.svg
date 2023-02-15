@@ -14,63 +14,75 @@
 	<g transform="translate(0 -100)">
 		<g transform="rotate(45)">
 			<g transform="scale(.5 .5)">
-				<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-				<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				<polygon fill="#FFC0CB" points="-50,-50 50,-50 -50,50 "/>
+				<polygon fill="#FFC0CB" points="-50,50 50,-50 50,50"/>
 			</g>
 		</g>
 	</g>
 
 	<!-- left leg -->
 	<g transform="translate(-40 90)">
-		<g transform="scale(.2 .6)">
-			<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-			<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
-		</g>
-		<g transform="translate(0 70)">
+		<g transform="rotate(45)">
 			<g transform="scale(.2 .6)">
-				<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-				<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				<polygon fill="#FFC0CB" points="-50,-50 50,-50 -50,50 "/>
+				<polygon fill="#FFC0CB
+				" points="-50,50 50,-50 50,50"/>
+			</g>
+			<g transform="translate(0 70)">
+				<g transform="scale(.2 .6)">
+					<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
+					<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				</g>
 			</g>
 		</g>
 	</g>
 
 	<!-- right leg -->
 	<g transform="translate(40 90)">
-		<g transform="scale(.2 .6)">
-			<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-			<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
-		</g>
-		<g transform="translate(0 70)">
+		<g transform="rotate(-15)">
 			<g transform="scale(.2 .6)">
-				<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-				<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				<polygon fill="#FFC0CB" points="-50,-50 50,-50 -50,50 "/>
+				<polygon fill="#FFC0CB" points="-50,50 50,-50 50,50"/>
+			</g>
+			<g transform="translate(-25 70)">
+				<g transform="rotate(45)">
+					<g transform="scale(.2 .6)">
+						<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
+						<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+					</g>
+				</g>
 			</g>
 		</g>
 	</g>
 
+	<!-- left arm -->
 	<g transform="translate(-90 -40)">
-		<g transform="scale(.6 .2)">
-			<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-			<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
-		</g>
-		<g transform="translate(-70 0)">
+		<g transform="rotate(45)">
 			<g transform="scale(.6 .2)">
-				<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-				<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				<polygon fill="#FFC0CB" points="-50,-50 50,-50 -50,50 "/>
+				<polygon fill="#FFC0CB" points="-50,50 50,-50 50,50"/>
+			</g>
+			<g transform="translate(-70 0)">
+				<g transform="scale(.6 .2)">
+					<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
+					<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				</g>
 			</g>
 		</g>
 	</g>
 
-
+	<!-- right arm -->
 	<g transform="translate(90 -40)">
-		<g transform="scale(.6 .2)">
-			<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-			<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
-		</g>
-		<g transform="translate(70 0)">
+		<g transform="rotate(-45)">
 			<g transform="scale(.6 .2)">
-				<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
-				<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				<polygon fill="#FFC0CB" points="-50,-50 50,-50 -50,50 "/>
+				<polygon fill="#FFC0CB" points="-50,50 50,-50 50,50"/>
+			</g>
+			<g transform="translate(70 0)">
+				<g transform="scale(.6 .2)">
+					<polygon fill="#EF161F" points="-50,-50 50,-50 -50,50 "/>
+					<polygon fill="#EF161F" points="-50,50 50,-50 50,50"/>
+				</g>
 			</g>
 		</g>
 	</g>
