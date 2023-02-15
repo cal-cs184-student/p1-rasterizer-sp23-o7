@@ -25,58 +25,39 @@
 
 <h1 align="middle">CS 184: Computer Graphics and Imaging, Spring 2018</h1>
 <h1 align="middle">Project 1: Rasterizer</h1>
-<h2 align="middle">Edith Llontrop, Stefanie Gschwind, CS184-??</h2>
+<h2 align="middle">Edith Llontrop, Stefanie Gschwind, CS184-o7</h2>
 
 <br><br>
 
 <div>
 
 <h2 align="middle">Overview</h2>
-<p>Give a high-level overview of what you implemented in this project. Think about what you've built as a whole. Share your thoughts on what interesting things you've learned from completing the project.</p>
+
+<p>Our project quote: "Triangles are rasterized by how we rasterized triangles"</p>
+
+<p>In this project we built a program that is able to render different object shapes using triangle rasterization, move those objects through a series of transformation functions, and render those objects using texture maps. That means that we basically built the bare-bones structure for a program
+   that can render and move anything we want it to as long as we can define it as a set of differnet trinagles and as long as we have the correct texture mapping. With enough effort, we could get a really compilcated object or scene to render using just the few simple functions we've implemented here!
+    We also learned how to deal with aliasing through the implementation of samples per pixels, pixel sampling, and level sampling. Which means that our relatively simple program can make even complicated renders look pretty decent!
+</p>
 
 <h2 align="middle">Section I: Rasterization</h2>
 
 <h3 align="middle">Part 1: Rasterizing single-color triangles</h3>
 
-<p>"Triangles are rasterized by How we rasterized triangles"</p>
 
-<p>In order to rasterize triangles we take the three points given to us create the smallest enclosing square to the triangle by indicating what the smallest and largest
-  x value is; we do the same for the y axis. We make sure that after finding these values to floor them so that we can deal with integers rather than decimals.
-  Once this is done we go through each pixel in our smallest enclosing box and initialize a new variable z that takes into consideration 
-  how many samples we have for this  pixel. Here however, z=1 as we are not supersampling, thus we make sure to find out new_x and new_y point that are 0.5 away from the original
-  pixel coordinate, denoting the center. After getting this new point we pass it into a function we created outselves called inside_line() that returns a value if the pixel is in
-  the three lines that make up the triangle. The inside_line() function uses the equation we have seen in class. In order to do this we make sure that the values returned from inside_line() are all greater 
-  than or equal to 0. In which we would proceed to update the sample_buffer to include the correct color for this pixel. 
-
-  Our algorithm is no worse than one that checks each sample within the bounding box of the triangle because we still check each pixel 
-  inside of the minimium enclosing square that we created.
+<p>In order to rasterize triangles we take the three points given to us to create the smallest enclosing square to the triangle by indicating what the smallest and largest x value is; we do the same for the y axis. We make sure that after finding these values to floor them so that we can deal with integers rather than decimals. Once this is done we go through each pixel in our smallest enclosing box and initialize a new variable z that takes into consideration how many samples we have for this pixel. Here however, z=1 as we are not supersampling, thus we make sure to find out new_x and new_y points that are 0.5 away from the original pixel coordinate, denoting the center. After getting this new point we pass it into a function we created ourselves called inside_line() that returns a value if the pixel is in the three lines that make up the triangle. The inside_line() function uses the equation we have seen in class. In order to do this we make sure that the values returned from inside_line() are all greater than or equal to 0. In which we would proceed to update the sample_buffer to include the correct color for this pixel. Our algorithm is no worse than one that checks each sample within the bounding box of the triangle because we still check each pixel inside of the minimum enclosing square that we created.
+  Here is an example 2x2 gridlike structure using an HTML table. Each tr is a row and each td is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.
 
 </p>
-
-<p>Here is an example 2x2 gridlike structure using an HTML table. Each <b>tr</b> is a row and each <b>td</b> is a column in that row. You might find this useful for framing and showing your result images in an organized fashion.</p>
 
 <div align="middle">
   <table style="width=100%">
     <tr>
       <td>
-        <img src="images/image1.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
+        <img src="images/screenshot_2-14_22-22-5.png" align="middle" width="400px"/>
+        <figcaption align="middle">/basic/test4.svg drawn with default viewing parameters</figcaption>
       </td>
-      <td>
-        <img src="images/image2.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-    </tr>
-    <br>
-    <tr>
-      <td>
-        <img src="images/image3.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
-      <td>
-        <img src="images/image4.png" align="middle" width="400px"/>
-        <figcaption align="middle">Caption goes here.</figcaption>
-      </td>
+      
     </tr>
   </table>
 </div>
@@ -85,21 +66,10 @@
 <h3 align="middle">Part 2: Antialiasing triangles</h3>
 
 
-<p>Our supersampling algorithm functions with modifications of our original triangle rasterization algorithm, the resolve_to_framebuffer() function, the set_sample_rate() function, and the fill_pixel() function.
-   In rasterize triangle we introduce a new variable z that keeps track of which number supersample we are currently taking inside one pixel. We also add two nested for loops that loop for varables i,j in the range of 0 to the square root 
-  of our sample size. This helps us find the exact float (position inside the pixel) that we need to be sampling from. The x, y positions of the supersample locations are computed by the equation: 
-  supersample x/y location = integar x/y pixel location + (i/j + 0.5)/(square root of sample rate). Where i,j are the same variables mentioned earlier and correspond to x,y respectivley. We check if each supersample exists inside the triangle using the
-three line test. If the spersample does lie within the triangle then we assign sample_buffer[z*(width*height)+(y*width+x)]=color. In order for this indexing to work, we increased the size of the sample buffer from width*height to sample_rate*width*height 
-the set_sample_rate() function. Eventhough the samplebuffer is just a (sample_rate * width * height) long one dimensional array, we imagined it as sample_rate many (width*height) long arrays. Thus the different supersamples were stored at the index locations
-z*(width*height)+(y*width+x), where z*(width*height) offsets all z consecutive supersamples from the previous supersample by width*height. This implementation however, caused the black boarder lines of the images to become blurred and transparent, thus we had 
-to make changes to fill_pixel(). Since our implementation of rasterize_triangle() doesn't call fill_pixel(), we know that fill_pixel() is only called by rasterize_point() and rasterize_line() and in both of those cases we know that what we are rasterizing is necessarily 
-occupying the entire pixel area with the given color. Thus we add a for loop in fill_pixel() that assigns the desired color for all z locations in the resized sample_buffer that correspond to that pixel's supersamples. This had to be done since our supersample implementation
-modified resolve_to_framebuffer() to average the colors of all z supersamples before assigning it to the framebuffer.</p>
+<p>Our supersampling algorithm functions with modifications of our original triangle rasterization algorithm, the resolve_to_framebuffer() function, the set_sample_rate() function, and the fill_pixel() function. In a rasterized triangle we introduce a new variable z that keeps track of which number supersample we are currently taking inside one pixel. We also add two nested for loops that loop for variables i,j in the range of 0 to the square root of our sample size. This helps us find the exact float (position inside the pixel) that we need to be sampling from. The x, y positions of the supersample locations are computed by the equation: supersample x/y location = integer x/y pixel location + (i/j + 0.5)/(square root of sample rate). Where i,j are the same variables mentioned earlier and correspond to x,y respectively. We check if each supersample exists inside the triangle using the three line test. If the super sample does lie within the triangle then we assign sample_buffer[z*(width*height)+(y*width+x)]=color. In order for this indexing to work, we increased the size of the sample buffer from width*height to sample_rate*width*height the set_sample_rate() function. Even though the sample buffer is just a (sample_rate * width * height) long one dimensional array, we imagined it as sample_rate many (width*height) long arrays. Thus the different supersamples were stored at the index locations z*(width*height)+(y*width+x), where z*(width*height) offsets all z consecutive supersamples from the previous supersample by width*height. This implementation however, caused the black border lines of the images to become blurred and transparent, thus we had to make changes to fill_pixel(). Since our implementation of rasterize_triangle() doesn't call fill_pixel(), we know that fill_pixel() is only called by rasterize_point() and rasterize_line() and in both of those cases we know that what we are rasterizing is necessarily occupying the entire pixel area with the given color. Thus we add a for loop in fill_pixel() that assigns the desired color for all z locations in the resized sample_buffer that correspond to that pixel's supersamples. This had to be done since our supersample implementation modified resolve_to_framebuffer() to average the colors of all z supersamples before assigning it to the framebuffer.
+</p>
+<p>Supersampling is useful because not all shapes and lines occupy all pixels completely. When we make the assumption that a pixel is either 100% in the shape or 0% in the shape, we end up with really pronounced jaggies. By supersampling we get a rough estimation of what percent of a certain pixel is inside a given geometric object. Then we can use that percentage to compute a modified color value for that pixel. The more supersamples in a pixel that test as inside an object, the closer that pixel color is to being the same color as a pixel which is entirely in the given shape. Supersampling acts almost as a sort of gradient effect for the edges of objects as the colors of the edge pixels will more gradually transition from object color to background color. This reduces the visibility/presence of jaggies. Another way to think of supersampling is as an increase in the sample rate. When we supersample, we're sampling an extra z amount of times per pixel in different locations. That is, we're considering more samples and thus antialiasing our triangles.
 
-<p>Supersampling is useful because not all shapes and lines occupy all pixels completely. When we make the assumption that a pixel is either 100% in the shape or 0% in the shape, we end up with really pronounced jaggies. By supersampling we get a rough esitmation of
-  what percent of a certain pixel is inside a given geometric object. Then we can use that percentage to compute a modified color value for that pixel. The more supersamples in a pixel that test as inside an object, the closer that pixel color is to being the same color as a pixel
-  which is entirely in the given shape. Supersampling acts almost as a sort of gradient effect for the edges of objects as the colors of the edge pixels will more gradually tarnsition from object color to background color. This reduces the visibility/presence of jaggies. Another way to think of supersampling
-  is as an increase in the sample rate. When we supersample, we're sampling an extra z amount of times per pixel in different locations. That is, we're considering more samples and thus atialiasing our triangles.
 </p>
 
 
@@ -129,7 +99,7 @@ modified resolve_to_framebuffer() to average the colors of all z supersamples be
   more freqently. </p>
 
 <h3 align="middle">Part 3: Transforms</h3>
-<p> We tried getting the cubeman to seem as if it was running to give you a hug. We changed some of the colors of its body to reflect Valentine's Day colors. </p>
+<p> We tried getting the cubeman to seem as if it was running to give you a hug. We changed some of the colors of its body to reflect Valentine's Day colors.</p>
   
 <div align="middle">
   <table style="width=100%">
@@ -150,11 +120,7 @@ modified resolve_to_framebuffer() to average the colors of all z supersamples be
 <h3 align="middle">Part 4: Barycentric coordinates</h3>
 
 <p> 
-  A Barycentric coordinate is a way to define a point (x,y) with respect to the three sides of a triangle. Lets define the three vertex points of a triangle as A, B, and C. Alpha is defined as the distance between point (x,y) and the line created by the two vertices B, C divided
-  by the distance betwee vertex A and the line created by vertices B, C. Beta is defined as the distance between point (x,y) and the line created by the two vertices C,A divided
-  by the distance betwee vertex B and the line created by vertices C, A. Gamma is defined as the distance between point (x,y) and the line created by the two vertices A, B divided
-  by the distance betwee vertex C and the line created by vertices A, B. Another way to think about alpha, beta, and gamma is as the proportional distances of (x,y) to each of the three vertices. If 0 &le; alpha, beta, gamma &le; 1 and
-  alpha + beta + gamma = 1, then we know that (x,y) is inside the triangle defined by the vertices A,B,C.
+  A Barycentric coordinate is a way to define a point (x,y) with respect to the three sides of a triangle. Let's define the three vertex points of a triangle as A, B, and C. Alpha is defined as the distance between point (x,y) and the line created by the two vertices B, C divided by the distance between vertex A and the line created by vertices B, C. Beta is defined as the distance between point (x,y) and the line created by the two vertices C,A divided by the distance between vertex B and the line created by vertices C, A. Gamma is defined as the distance between point (x,y) and the line created by the two vertices A, B divided by the distance between vertex C and the line created by vertices A, B. Another way to think about alpha, beta, and gamma is as the proportional distances of (x,y) to each of the three vertices. If 0 ≤ alpha, beta, gamma ≤ 1 and alpha + beta + gamma = 1, then we know that (x,y) is inside the triangle defined by the vertices A,B,C.
 </p>
 
 <div align="middle">
@@ -171,9 +137,135 @@ modified resolve_to_framebuffer() to average the colors of all z supersamples be
 
 <h3 align="middle">Part 5: "Pixel sampling" for texture mapping</h3>
 
+<p>Pixel Sampling: Pixel sampling, as it is used in the context of texture mapping in this project, is the process of converting a point within the triangle defined in screen space 
+  by the three vertices (x0, y0), (x1, y1), (x2, y2) to a point in the texture space within the triangle defined by (u0, v0), (u1, v1), (u2, v2), where each vertex in the screen space 
+  corresponds to a vertex in the texture space. The way that is done is by first defining the point relative to the vertices in the screen space using Barycentric coordinates, and then finding
+  the new point in the texture space which using the same set of Barycentric coordinates but relative to the u,v vertices in the texture space. To clarify, we find alpha, beta, gamma as they are defined 
+  in Part 4, using (x0, y0), (x1, y1), (x2, y2) as our vertices. Then we multiply our vertices in the texture space (u0, v0), (u1, v1), (u2, v2) by the same alpha, beta, gamma values to get the desired 
+  point location in the texture space. As a final step, we need to multiply the x and y components coordinate of the found point by the width and height of the texture space respectively.
+
+</p>
+
+<p>Nearest Pixel Sampling: Nearest pixel sampling is a method of pixel sampling, in which after we've found our point in the texture space, we round the x and y components of the point to the 
+  nearest integer values. This finds the nearest defined texture sample location to our texture space point. We return the Color at the nearest defined texture sample location and assign it to the 
+  point in the x,y/screen space.  
+</p>
+
+<p>Bilinear Pixel Sampling: Bilinear sampling functions by finding the four closest defined texture sample locations in the texturespace that would enclose our point if you were to connect them like vertices of a 
+  rectangle. Let us reference these four sample locations by their location relative to our point, i.e. bottom left, bottom right, top left, and top right. Then using the bottom left texture sample we find scalar values s,t where s = (x component of our point) - (x component of the bottom left texture sample) and 
+  t = (y component of our point) - (y component of the bottom left texture sample). We use the lerp function defined as lerp(a, p1, p2) = p1 + a(p2 - p1), where a is a scalar and p1 and p2 are the Color objects.
+   We find mdpt_top = lerp(s, (Color object at top left texture sample), (Color object at top right texture sample)) and mdpt_bottom = lerp(s, (Color object at top left texture sample), (Color object at top right texture sample)). 
+   Finally we find pt_C = lerp(t, mdpt_top, mdpt_bottom). This pt_C is the Color object we will assign to the point in screen space. 
+</p>
+
+<p>
+  Nearest sampling chooses the closest texture pixel to the uv coordinate. Bilinear sampling finds the nearest 4 texture pixels and interpolates the color object at each of them. It can be thought of doing as an averaging between the 4 pixels and the biggest difference between the both would be when we instead want to highlight each pixel instead of smoothing it out.
+  </p>
+
+<div align="middle">
+  <table style="width=100%">
+    <tr>
+      <td>
+        <img src="images/screenshot_2-14_21-32-16.png" align="middle" width="400px"/>
+        <figcaption align="middle">1 sample per pixel, nearest sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/screenshot_2-14_21-32-18.png" align="middle" width="400px"/>
+        <figcaption align="middle">16 samples per pixel, nearest sampling</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/screenshot_2-14_21-32-23.png" align="middle" width="400px"/>
+        <figcaption align="middle">1 sample per pixel, bilinear sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/screenshot_2-14_21-32-26.png" align="middle" width="400px"/>
+        <figcaption align="middle">16 samples per pixel, bilinear sampling</figcaption>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        <img src="images/screenshot_2-14_21-33-5.png" align="middle" width="400px"/>
+        <figcaption align="middle">1 sample per pixel, nearest sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/screenshot_2-14_21-33-7.png" align="middle" width="400px"/>
+        <figcaption align="middle">16 samples per pixel, nearest sampling</figcaption>
+      </td>
+    </tr>
+    <br>
+    <tr>
+      <td>
+        <img src="images/screenshot_2-14_21-33-12.png" align="middle" width="400px"/>
+        <figcaption align="middle">1 sample per pixel, bilinear sampling</figcaption>
+      </td>
+      <td>
+        <img src="images/screenshot_2-14_21-33-14.png" align="middle" width="400px"/>
+        <figcaption align="middle">16 samples per pixel, nearest sampling</figcaption>
+      </td>
+    </tr>
+  </table>
+</div>
+
 
 <h3 align="middle">Part 6: "Level sampling" with mipmaps for texture mapping</h3>
 
+
+<p>
+  The higher the levels you go on mipmaps the smaller the image becomes, and therefore its resolution decreases. Level sampling helps choose the appropriate level that will help alleviate aliasing. mIt’s useful for images that reflect changes in distances between the camera and the object. For example, an object that is further away from the camera will have its texture seem smaller than what it is. The textures in our image don’t appear correct and because of this we use level sampling. The texture gets scaled down by sampling multiple pixels of a texture map to decide what color that pixel should be.
+
+  In all three three different techniques in the more you pixel sample, level sample, and increase the levels per pixels you get a less aliased image, but with that comes an increase of memory usage and more time in rendering the image. 
+
+
+  The way we implemented level sampling was by implementing three different level sampling options: L_ZERO, L_NEAREST, and L_LINEAR. The L_ZERO level sampling simply uses the 0th level of the texture's Mipmap for the pixel sampling methods described in Task 4.
+  To implement L_NEAREST and L_LINEAR level sampling we need to define two more variables: dx_uv and dy_uv. These dx_uv variable represets the offset in the texture space that moving one integar pixel width to the right of our original desired point would correspond to. 
+  The way to find this offset is by finding new alpha, beta, gamma, value for the point (x+1, y) where (x,y) is our original point in the screen space. Then multiplying the screen sapce triangle vertices (u0,v0),(u1,v1),(u2,v2) by the new alpha, beta, gamma values, we find dx_uv.
+   We do this same process for the point (x, y+1) to find dy_uv. Now that we have dx_uv and dy_uv we can implement L_NEAREST by defining the function get_level(), which returns log2(max((width*sp.dx_uv).norm(), (height*sp.dy_uv).norm())). It is important to note that we clamp the values
+   returned by get_level() to be greater than or equal to 0 andless than or equal to the max Mipmap level. For L_NEAREST we round the value returned by get_level to the closest integar value. We then use this rounded integar as the Mipmap level which we will use for pixel sampling. 
+   Finally for L_LINEAR, we again call get_level() but this time we floor the value returned by get_level() and define this integar as the lower Mipmap level, we define the higher Mipmap level to be 1 + the lower Mipmap level, and we define a scalar diff as the difference between the 
+   original value returned by get_level() and the lower Mipmap level. We proceed by running pixel sampling for our desired point twice, once on the Mipmap corresponding to the lower Mipmap level (returns lower_C Color object), and once with the Mipmap corresponding to the higher Mipmap level (returns higher_C Color object).
+    From this process we get two Color objects, lower_C and higher_C, for the desired point. The Color we end up assigning to the desired point in the screen space is [(1-diff)*lower_C] + (diff * higher_C).
+
+  </p>
+
+  <div align="middle">
+    <table style="width=100%">
+      <tr>
+        <td>
+          <img src="images/screenshot_2-14_22-3-27.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_ZERO, P_NEAREST</figcaption>
+        </td>
+        <td>
+          <img src="images/screenshot_2-14_22-3-22.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_NEAREST, P_NEAREST</figcaption>
+        </td>
+      </tr>
+      <br>
+      <tr>
+        <td>
+          <img src="images/screenshot_2-14_22-3-25.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_LINEAR, P_NEAREST</figcaption>
+        </td>
+        <td>
+          <img src="images/screenshot_2-14_22-3-32.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_ZERO, P_LINEAR</figcaption>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <img src="images/screenshot_2-14_22-3-30.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_NEAREST, P_LINEAR</figcaption>
+        </td>
+        <td>
+          <img src="images/screenshot_2-14_22-3-33.png" align="middle" width="400px"/>
+          <figcaption align="middle">L_LINEAR, P_LINEAR</figcaption>
+        </td>
+      </tr>
+      <br>
+    </table>
+  </div>
 
 
 <h2 align="middle">Section III: Art Competition</h2>
