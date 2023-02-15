@@ -229,16 +229,18 @@ namespace CGL {
               float beta_dx = line_dist(new_x + 1, new_y, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
               float gamma_dx = 1. - alpha_dx - beta_dx;
 
-              samp_para.p_dx_uv.x = samp_para.p_uv.x - (alpha_dx * (u0) + beta_dx *(u1) + gamma_dx *(u2));
-              samp_para.p_dx_uv.y = samp_para.p_uv.y - (alpha_dx * (v0) + beta_dx *(v1) + gamma_dx *(v2));
+              samp_para.p_dx_uv.x = (alpha_dx * (u0) + beta_dx *(u1) + gamma_dx *(u2)) - samp_para.p_uv.x ;
+              samp_para.p_dx_uv.y = (alpha_dx * (v0) + beta_dx *(v1) + gamma_dx *(v2)) - samp_para.p_uv.y ;
 
               float alpha_dy = line_dist(new_x, new_y + 1, x1,y1,x2,y2)/line_dist(x0, y0, x1,y1,x2,y2);
               float beta_dy = line_dist(new_x, new_y + 1, x0,y0,x2,y2)/line_dist(x1, y1, x0,y0,x2,y2);
               float gamma_dy = 1. - alpha_dy - beta_dy;
 
-              samp_para.p_dy_uv.x = samp_para.p_uv.x - (alpha_dy * (u0) + beta_dy *(u1) + gamma_dy *(u2));
-              samp_para.p_dy_uv.y = samp_para.p_uv.y - (alpha_dy * (v0) + beta_dy *(v1) + gamma_dy *(v2));
+              samp_para.p_dy_uv.x = (alpha_dy * (u0) + beta_dy *(u1) + gamma_dy *(u2)) -  samp_para.p_uv.x ;
+              samp_para.p_dy_uv.y = (alpha_dy * (v0) + beta_dy *(v1) + gamma_dy *(v2)) - samp_para.p_uv.y ;
               
+              samp_para.lsm = lsm;
+              samp_para.psm = psm;
               
               Color c = tex.sample(samp_para);
               //Color pt_color = alpha*c0 + beta*c1 + gamma*c2;

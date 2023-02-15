@@ -14,54 +14,64 @@ bool newcomp(int a, int b)
 namespace CGL {
 
   Color Texture:: lerp(float x, Color v0, Color v1){
-    Color diff = (v1[0]-v0[0], v1[1]-v0[1],v1[2]-v0[2]);
-    diff = x*(diff);
-    Color sum = (v0[0]+diff[0], v0[1] + diff[1], v0[2]+diff[2]);
+    // Color diff = (v1[0]-v0[0], v1[1]-v0[1],v1[2]-v0[2]);
+    // diff = (x * diff[0], diff[1] * x, diff[2]*x);
+    // Color sum = (v0[0]+diff[0], v0[1] + diff[1], v0[2]+diff[2]);
+    Color sum = (1-x)*v0 + x*v1;
     return sum;
   }
 
   Color Texture::sample(const SampleParams& sp) {
     // TODO: Task 6: Fill this in.
 
-    int level;
-
+    float lvl = get_level(sp);
     if(sp.lsm == 0){
-      level = 0;
-    }else if(sp.lsm ==1){
-      level = round(get_level(sp));
-    }else{
-      int lower = std::floor(get_level(sp));
-      int higher = std::ceil(get_level(sp));
-      float diff = get_level(sp) - lower;
-      Color lowerC = (0,0,0);
-      Color higherC = (0,0,0);
+      int level = 0;
       if (sp.psm == 0){
-        lowerC = sample_nearest(sp.p_uv, lower);
-        higherC = sample_nearest(sp.p_uv,higher);
+        return sample_nearest(sp.p_uv, level);
       }else{
-        lowerC = sample_bilinear(sp.p_uv, lower);
-        higherC = sample_bilinear(sp.p_uv,higher);
+        return sample_bilinear(sp.p_uv, level);
       }
-      Color temp = ((1-diff)*lowerC[0] + diff*higherC[0], (1-diff)*lowerC[1] + diff*higherC[1],(1-diff)*lowerC[2] + diff*higherC[2]);
-      return temp;
+    }else if(sp.lsm ==1){
+      if (sp.psm == 0){
+        return sample_nearest(sp.p_uv, round(lvl));
+      }else{
+        return sample_bilinear(sp.p_uv, round(lvl));
+      }
+    }else if (sp.lsm ==2){
+      int lower = std::floor(lvl);
+      int higher = lower + 1;
+      float diff = lvl - (lower);
+      
+      if (sp.psm == 0){
+        Color lowerC = sample_nearest(sp.p_uv, lower);
+        Color higherC = sample_nearest(sp.p_uv, higher);
+        //Color temp = (1.0-diff)*lowerC + diff*higherC;
+        return (1.0-diff)*lowerC + diff*higherC;
+      }else{
+        Color lowerC = sample_bilinear(sp.p_uv, lower);
+        Color higherC = sample_bilinear(sp.p_uv, higher);
+        //Color temp = (1.0-diff)*lowerC + diff*higherC;
+        return (1.0-diff)*lowerC + diff*higherC;
+      }
     }
     //std::cout<< level;
-
-    if (sp.psm == 0){
-      return sample_nearest(sp.p_uv, level);
-    }else{
-      return sample_bilinear(sp.p_uv, level);
-    }
     // return magenta for invalid level
     return Color(0, 0, 1);
   }
 
   float Texture::get_level(const SampleParams& sp) {
     // TODO: Task 6: Fill this in.
-    float first_sqrt = sqrt(pow(sp.p_dx_uv.x,2) + pow(sp.p_dx_uv.y,2));
-    float second_sqrt = sqrt(pow(sp.p_dy_uv.x,2) + pow(sp.p_dy_uv.y,2));
-    float max = std::max({first_sqrt, second_sqrt}, newcomp);
+    float first_sqrt = float(sqrt(float(pow(sp.p_dx_uv.x,2)) + float(pow(sp.p_dx_uv.y,2))));
+    float second_sqrt = float(sqrt(float(pow(sp.p_dy_uv.x,2)) + float(pow(sp.p_dy_uv.y,2))));
+    float max = log2(std::max({first_sqrt, second_sqrt}, newcomp));
 
+    if (max < 0){
+      return 0.;
+    }else if (max > mipmap.size()-1){
+      return float(mipmap.size()-1);
+    }
+    //cout<<max;
     return max;
   }
 
