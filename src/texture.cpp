@@ -25,54 +25,58 @@ namespace CGL {
     // TODO: Task 6: Fill this in.
 
     float lvl = get_level(sp);
-    if(sp.lsm == 0){
-      int level = 0;
-      if (sp.psm == 0){
-        return sample_nearest(sp.p_uv, level);
-      }else{
-        return sample_bilinear(sp.p_uv, level);
-      }
-    }else if(sp.lsm ==1){
-      if (sp.psm == 0){
+
+    int lower = std::floor(lvl);
+    int higher = lower + 1;
+    float diff = lvl - (lower);
+
+    if(sp.psm == 0){
+      if(sp.lsm == 0){
+        return sample_nearest(sp.p_uv, 0);
+      }else if (sp.lsm == 1){
         return sample_nearest(sp.p_uv, round(lvl));
       }else{
-        return sample_bilinear(sp.p_uv, round(lvl));
-      }
-    }else if (sp.lsm ==2){
-      int lower = std::floor(lvl);
-      int higher = lower + 1;
-      float diff = lvl - (lower);
-      
-      if (sp.psm == 0){
         Color lowerC = sample_nearest(sp.p_uv, lower);
         Color higherC = sample_nearest(sp.p_uv, higher);
-        //Color temp = (1.0-diff)*lowerC + diff*higherC;
-        return (1.0-diff)*lowerC + diff*higherC;
+        return (1.0 - diff)*lowerC + diff*higherC;
+      }
+    }else{
+      if(sp.lsm == 0){
+        return sample_bilinear(sp.p_uv, 0);
+      }else if (sp.lsm == 1){
+        return sample_bilinear(sp.p_uv, round(lvl));
       }else{
         Color lowerC = sample_bilinear(sp.p_uv, lower);
         Color higherC = sample_bilinear(sp.p_uv, higher);
-        //Color temp = (1.0-diff)*lowerC + diff*higherC;
-        return (1.0-diff)*lowerC + diff*higherC;
+        return (1.0 - diff)*lowerC + diff*higherC;
       }
     }
-    //std::cout<< level;
-    // return magenta for invalid level
+
     return Color(0, 0, 1);
   }
 
   float Texture::get_level(const SampleParams& sp) {
     // TODO: Task 6: Fill this in.
-    float first_sqrt = float(sqrt(float(pow(sp.p_dx_uv.x,2)) + float(pow(sp.p_dx_uv.y,2))));
-    float second_sqrt = float(sqrt(float(pow(sp.p_dy_uv.x,2)) + float(pow(sp.p_dy_uv.y,2))));
-    float max = log2(std::max({first_sqrt, second_sqrt}, newcomp));
 
-    if (max < 0){
-      return 0.;
-    }else if (max > mipmap.size()-1){
-      return float(mipmap.size()-1);
+    float first = (width*sp.p_dx_uv).norm();
+    float second = (height*sp.p_dy_uv).norm();
+    float level = log2f(max(first, second));
+
+    if(sp.lsm == 2){
+      if (level < 0){
+        return 0.;
+      }else if (level > mipmap.size()-2){
+        return mipmap.size()-2;
+      }
+    }else{
+      if (level < 0){
+        return 0.;
+      }else if (level > mipmap.size()-1){
+        return mipmap.size()-1;
+      }
     }
     //cout<<max;
-    return max;
+    return level;
   }
 
   Color MipLevel::get_texel(int tx, int ty) {

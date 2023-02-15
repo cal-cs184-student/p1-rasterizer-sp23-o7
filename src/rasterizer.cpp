@@ -98,14 +98,26 @@ namespace CGL {
 
     float sample_sqrt = 1;    
     if(sample_rate != 1){
-      sample_sqrt = sqrt(sample_rate);
+      sample_sqrt = float(std::sqrt(sample_rate));
     }
     
 
     float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
     float y_upper_bound = floor(std::max({y0, y1, y2}, comp));
+    if(y_upper_bound > height){
+      y_upper_bound = height;
+    }
+    if(y_lower_bound <0){
+      y_lower_bound = 0;
+    }
     float x_lower_bound = floor(std::min({x0, x1, x2}, comp));
+    if(x_lower_bound < 0){
+      x_lower_bound = 0;
+    }
     float x_upper_bound = floor(std::max({x0, x1, x2}, comp));
+    if(x_upper_bound > width){
+      x_upper_bound = width;
+    }
 
     for (float x = (x_lower_bound ); x < x_upper_bound; x = x + 1.0){
       for (float y = (y_lower_bound); y < y_upper_bound; y = y + 1.0 ){
@@ -148,7 +160,7 @@ namespace CGL {
 
     float sample_sqrt = 1;    
     if(sample_rate != 1){
-      sample_sqrt = sqrt(sample_rate);
+      sample_sqrt = float(std::sqrt(sample_rate));
     }
     
     float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
@@ -196,7 +208,7 @@ namespace CGL {
 
     float sample_sqrt = 1;    
     if(sample_rate != 1){
-      sample_sqrt = sqrt(sample_rate);
+      sample_sqrt = float(std::sqrt(sample_rate));
     }
     
     float y_lower_bound = floor(std::min({y0, y1, y2}, comp));
@@ -278,7 +290,7 @@ namespace CGL {
     this->rgb_framebuffer_target = rgb_framebuffer;
 
 
-    this->sample_buffer.resize((width * height), Color::White);
+    this->sample_buffer.resize(sample_rate*(width * height), Color::White);
   }
 
 
@@ -299,7 +311,7 @@ namespace CGL {
     //where we want to sum down?
     float sample_sqrt = 1;    
     if(sample_rate != 1){
-      sample_sqrt = sqrt(sample_rate);
+      sample_sqrt = float(std::sqrt(sample_rate));
     } 
 
     for (int x = 0; x < width; x++) {
